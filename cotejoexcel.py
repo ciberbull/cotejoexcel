@@ -16,14 +16,7 @@ def find_duplicate_values_in_excel_files():
     files = [f for f in os.listdir() if f.endswith('.xlsx') or f.endswith('.xls')]
 
     # Preguntar al usuario qué columna contiene los valores de interés
-    while True:
-        try:
-            column_number = int(input("¿Qué número de columna contiene los valores de interés? (1 para la primera columna, 2 para la segunda, etc.): ")) - 1
-            if column_number < 0:
-                raise ValueError
-            break
-        except ValueError:
-            print("Por favor, introduzca un número de columna válido.")
+    column_name = input("¿Qué nombre de columna contiene los valores de interés?: ")
 
     # Diccionario para almacenar los valores de la columna especificada de cada archivo
     values_dict = defaultdict(set)
@@ -35,16 +28,18 @@ def find_duplicate_values_in_excel_files():
     for file in files:
         try:
             # Leer el archivo Excel
-            df = pd.read_excel(file, usecols=[column_number], header=None, dtype=str)
-            # Verificar si hay datos en la columna especificada
-            if not df.empty:
-                # Obtener los valores únicos de la columna especificada
-                values = df.iloc[:, 0].dropna().tolist()
-                values_dict[file].update(values)
-                # Contar las ocurrencias de cada valor y registrar en qué archivos aparece
-                for value in values:
-                    value_counts[value] += 1
-                    file_occurrences[value].add(file)
+            df = pd.read_excel(file, dtype=str)
+            # Verificar si la columna especificada existe en el DataFrame
+            if column_name not in df.columns:
+                print(f"La columna '{column_name}' no existe en el archivo {file}.")
+                continue
+            # Obtener los valores únicos de la columna especificada
+            values = df[column_name].dropna().tolist()
+            values_dict[file].update(values)
+            # Contar las ocurrencias de cada valor y registrar en qué archivos aparece
+            for value in values:
+                value_counts[value] += 1
+                file_occurrences[value].add(file)
         except Exception as e:
             print(f"Error al leer {file}: {e}")
 
